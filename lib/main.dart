@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+
 void main() {
   runApp(MyApp());
 }
@@ -32,9 +33,17 @@ class _StudyAidScreenState extends State<StudyAidScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _textController,
-              decoration: InputDecoration(labelText: 'Enter text'),
+            Flexible(
+              child: TextField(
+                controller: _textController,
+                decoration: InputDecoration(
+                  labelText: 'Enter text',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.multiline,
+                minLines: 1,
+                maxLines: null, // Expands infinitely based on content
+              ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
