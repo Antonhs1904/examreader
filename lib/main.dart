@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'dart:io';
+import 'package:path/path.dart' as path;
 
 void main() {
   runApp(MyApp());
@@ -11,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: StudyAidScreen(),
-    );
+    );  
   }
 }
 
@@ -22,6 +25,49 @@ class StudyAidScreen extends StatefulWidget {
 
 class _StudyAidScreenState extends State<StudyAidScreen> {
   TextEditingController _textController = TextEditingController();
+  FlutterTts flutterTts = FlutterTts();
+  AudioPlayer audioPlayer = AudioPlayer();
+  String? mp3FilePath;
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    flutterTts.stop();
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _convertTextToSpeech() async {
+    String text = _textController.text;
+    if (text.isEmpty) {
+      return;
+    }
+
+    // Get the temporary directory
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path;
+    String filePath = path.join(tempPath, 'speech.mp3');
+
+    // Convert text to speech and save as an MP3 file
+    await flutterTts.setLanguage('en-US');
+    await flutterTts.setSpeechRate(0.5);
+    await flutterTts.setVolume(1.0);
+    await flutterTts.setPitch(1.0);
+    await flutterTts.synthesizeToFile(text, filePath);
+
+    setState(() {
+      mp3FilePath = filePath;
+    });
+  }
+
+  Future<void> _playMp3() async {
+    if (mp3FilePath == null) {
+      return;
+    }
+
+    await audioPlayer.setSourceUrl(mp3FilePath!);
+    await audioPlayer.resume();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,11 +93,15 @@ class _StudyAidScreenState extends State<StudyAidScreen> {
             ),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                // Add your text-to-speech conversion code here
-              },
+              onPressed: _convertTextToSpeech,
               child: Text('Convert to Speech'),
             ),
+            SizedBox(height: 20),
+            if (mp3FilePath != null)
+              ElevatedButton(
+                onPressed: _playMp3,
+                child: Text('Play MP3'),
+              ),
             Expanded(
               child: ListView(
                 children: [
