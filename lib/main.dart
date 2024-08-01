@@ -65,9 +65,21 @@ class _StudyAidScreenState extends State<StudyAidScreen> {
       return;
     }
 
-    await audioPlayer.setSourceUrl(mp3FilePath!);
+    // Check if the file exists
+    final file = File(mp3FilePath!);
+    if (!await file.exists()) {
+      print('File does not exist: $mp3FilePath');
+      return;
+    }
+
+    // Set the source for the AudioPlayer
+    await audioPlayer.setSource(DeviceFileSource(mp3FilePath!));
+
+    // Play the audio
     await audioPlayer.resume();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
